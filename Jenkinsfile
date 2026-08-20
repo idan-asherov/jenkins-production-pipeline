@@ -26,7 +26,7 @@ pipeline {
                 sh """
                     export BUILD_NUMBER=${env.BUILD_NUMBER}
                     export GIT_COMMIT_SHORT=${GIT_COMMIT_SHORT}
-                    docker compose build
+                    docker-compose build
                 """
             }
         }
