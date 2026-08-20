@@ -15,9 +15,8 @@ pipeline {
         stage('Test & Coverage Gate') {
             steps {
                 dir('api') {
-                    // הרצה נקייה של התקנת חבילות ובדיקות דרך ה-CLI של המערכת
-                    sh 'npm install'
-                    sh 'npm test' 
+                    // מריץ את הבדיקות בתוך מכולת Node מבודדת שלא תלויה בשרת של ג'נקינס!
+                    sh 'docker run --rm -v $(pwd):/app -w /app node:20-alpine sh -c "npm install && npm test"'
                 }
             }
         }
