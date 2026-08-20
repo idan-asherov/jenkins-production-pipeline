@@ -5,8 +5,8 @@ services:
       args:
         - BUILD_NUMBER=${BUILD_NUMBER:-local}
         - COMMIT_HASH=${GIT_COMMIT_SHORT:-unknown}
-    ports:
-      - "3000:3000"
+    networks:
+      - bg-network
     restart: unless-stopped
 
   web:
@@ -15,8 +15,14 @@ services:
       args:
         - BUILD_NUMBER=${BUILD_NUMBER:-local}
         - COMMIT_HASH=${GIT_COMMIT_SHORT:-unknown}
-    ports:
-      - "8000:8000"
+    environment:
+      - API_HOST=${COMPOSE_PROJECT_NAME}-api-1
+    networks:
+      - bg-network
     depends_on:
       - api
     restart: unless-stopped
+
+networks:
+  bg-network:
+    external: true

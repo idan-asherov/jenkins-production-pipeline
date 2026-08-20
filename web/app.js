@@ -12,7 +12,9 @@ app.get("/health", (req, res) => {
 
 app.get("/api/greets", async (req, res) => {
   try {
-    const response = await fetch("http://api:3000/api/greets");
+    // Dynamic API host based on environment (blue or green)
+    const apiHost = process.env.API_HOST || "api";
+    const response = await fetch(`http://${apiHost}:3000/api/greets`);
     const data = await response.json();
     res.json(data);
   } catch (error) {
