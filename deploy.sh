@@ -30,14 +30,13 @@ sleep 10
 
 # Ensure Nginx router container is running safely
 if ! docker ps -q -f name=nginx-router | grep -q .; then
-    echo "Starting initial Nginx router..."
+    echo "Starting initial nginx-router..."
     docker rm -f nginx-router 2>/dev/null || true
 
-    if [ -d "nginx.conf" ]; then
-        rm -rf nginx.conf
-    fi
+    # מחיקה מוחלטת של כל מה שנקרא nginx.conf (בין אם קובץ או תיקייה שדוקר יצר)
+    rm -rf nginx.conf
 
-    touch nginx.conf
+    # יצירת קובץ טקסט חדש לחלוטין מאפס
     cat << 'CONF' > nginx.conf
 events {}
 http {
@@ -47,7 +46,8 @@ http {
     }
 }
 CONF
-    docker run -d --name nginx-router -p 8000:80 --network bg-network -v $(pwd)/nginx.conf:/etc/nginx/nginx.conf nginx:alpine
+
+    docker run -d --name nginx-router -p 8000:80 --network bg-network -v "$(pwd)/nginx.conf:/etc/nginx/nginx.conf" nginx:alpine
 fi
 
 # Run Health Check against the newly spun up API container
