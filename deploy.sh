@@ -31,6 +31,7 @@ sleep 10
 # Ensure Nginx router container is running safely
 if ! docker ps -q -f name=nginx-router | grep -q .; then
     echo "Starting initial Nginx router..."
+    docker rm -f nginx-router 2>/dev/null || true
     touch nginx.conf
     cat << 'CONF' > nginx.conf
 events {}
