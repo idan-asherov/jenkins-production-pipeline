@@ -6,8 +6,10 @@ const greets = [
   "You've got everything you need to succeed.",
   "Every step you take moves you forward."
 ];
+
 function randomGreets() {
   const index = Math.floor(Math.random() * greets.length);
   return greets[index];
 }
+
 module.exports = { randomGreets, greets };
