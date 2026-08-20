@@ -32,6 +32,11 @@ sleep 10
 if ! docker ps -q -f name=nginx-router | grep -q .; then
     echo "Starting initial Nginx router..."
     docker rm -f nginx-router 2>/dev/null || true
+
+    if [ -d "nginx.conf" ]; then
+        rm -rf nginx.conf
+    fi
+
     touch nginx.conf
     cat << 'CONF' > nginx.conf
 events {}
