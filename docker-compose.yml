@@ -8,8 +8,7 @@ services:
       args:
         BUILD_NUMBER: "${BUILD_NUMBER:-local}"
         GIT_COMMIT_SHORT: "${GIT_COMMIT_SHORT:-unknown}"
-    ports:
-      - "3000:3000"
+    # הסרנו את ה-ports החוצה מכיוון ש-Nginx מדבר איתם פנימית ברשת
     environment:
       - BUILD_NUMBER=${BUILD_NUMBER:-local}
       - GIT_COMMIT_SHORT=${GIT_COMMIT_SHORT:-unknown}
