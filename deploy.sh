@@ -18,12 +18,12 @@ fi
 echo "Active environment is $CURRENT. Deploying $NEW..."
 export COMPOSE_PROJECT_NAME=$NEW
 
-# Build the NEW environment, explicitly injecting Jenkins build environment variables
+# Build the NEW environment using docker-compose
 echo "Building Docker images for $NEW with build number: $BUILD_NUMBER and commit: $GIT_COMMIT_SHORT"
-docker compose build --no-cache
+docker-compose build --no-cache
 
 # Start the NEW environment in background
-docker compose up -d
+docker-compose up -d
 
 echo "Waiting for $NEW to spin up (10 seconds)..."
 sleep 10
@@ -49,7 +49,7 @@ HEALTH_CHECK=$(docker exec nginx-router curl -s -o /dev/null -w "%{http_code}" h
 
 if [ "$HEALTH_CHECK" != "200" ]; then
     echo "❌ Health check failed for $NEW (Status: $HEALTH_CHECK). Rolling back!"
-    docker compose -p $NEW down
+    docker-compose -p $NEW down
     exit 1
 fi
 
@@ -73,7 +73,7 @@ docker exec nginx-router nginx -s reload
 # Tear down the old environment safely
 if [ "$CURRENT" != "$NEW" ] && docker ps -q -f name=${CURRENT}-api | grep -q .; then
     echo "Tearing down old environment ($CURRENT)..."
-    docker compose -p $CURRENT down || true
+    docker-compose -p $CURRENT down || true
 fi
 
 echo "🚀 Blue-Green Deployment completed successfully!"
