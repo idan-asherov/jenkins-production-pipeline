@@ -7,7 +7,7 @@ echo "=== Starting Blue-Green Deployment ==="
 docker network create bg-network 2>/dev/null || true
 
 # Check which environment is currently running
-if docker ps -q -f name=blue-web | grep -q .; then
+if docker ps -q -f name=blue-api | grep -q .; then
     CURRENT="blue"
     NEW="green"
 else
@@ -18,13 +18,17 @@ fi
 echo "Active environment is $CURRENT. Deploying $NEW..."
 export COMPOSE_PROJECT_NAME=$NEW
 
-# Start the NEW environment
+# Build the NEW environment, explicitly injecting Jenkins build environment variables
+echo "Building Docker images for $NEW with build number: $BUILD_NUMBER and commit: $GIT_COMMIT_SHORT"
+docker compose build --no-cache
+
+# Start the NEW environment in background
 docker compose up -d
 
 echo "Waiting for $NEW to spin up (10 seconds)..."
 sleep 10
 
-# Ensure Nginx is running
+# Ensure Nginx router container is running
 if ! docker ps -q -f name=nginx-router | grep -q .; then
     echo "Starting initial Nginx router..."
     cat << 'CONF' > nginx.conf
@@ -39,9 +43,9 @@ CONF
     docker run -d --name nginx-router -p 8000:80 --network bg-network -v $(pwd)/nginx.conf:/etc/nginx/nginx.conf nginx:alpine
 fi
 
-# Run Health Check!
-echo "Running health check on $NEW..."
-HEALTH_CHECK=$(docker exec nginx-router curl -s -o /dev/null -w "%{http_code}" http://$NEW-web-1:8000/health || echo "failed")
+# Run Health Check against the newly spun up API container
+echo "Running health check on $NEW api service..."
+HEALTH_CHECK=$(docker exec nginx-router curl -s -o /dev/null -w "%{http_code}" http://${NEW}-api-1:3000/health || echo "failed")
 
 if [ "$HEALTH_CHECK" != "200" ]; then
     echo "❌ Health check failed for $NEW (Status: $HEALTH_CHECK). Rolling back!"
@@ -56,7 +60,7 @@ http {
     server {
         listen 80;
         location / {
-            proxy_pass http://$NEW-web-1:8000;
+            proxy_pass http://${NEW}-api-1:3000;
         }
     }
 }
@@ -66,10 +70,10 @@ CONF
 docker cp nginx.conf nginx-router:/etc/nginx/nginx.conf
 docker exec nginx-router nginx -s reload
 
-# Tear down the old environment
-if [ "$CURRENT" != "$NEW" ] && docker ps -q -f name=$CURRENT-web | grep -q .; then
+# Tear down the old environment safely
+if [ "$CURRENT" != "$NEW" ] && docker ps -q -f name=${CURRENT}-api | grep -q .; then
     echo "Tearing down old environment ($CURRENT)..."
-    docker compose -p $CURRENT down
+    docker compose -p $CURRENT down || true
 fi
 
 echo "🚀 Blue-Green Deployment completed successfully!"
