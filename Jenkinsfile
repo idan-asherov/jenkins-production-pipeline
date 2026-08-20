@@ -32,9 +32,6 @@ pipeline {
         }
         
         stage('Deploy (Blue-Green)') {
-            when {
-                branch 'main'
-            }
             steps {
                 sh 'bash deploy.sh'
             }
