@@ -14,12 +14,10 @@ pipeline {
         
         stage('Test & Coverage Gate') {
             steps {
-                // הרצת הבדיקות בתוך קונטיינר Node מבודד כדי לא להסתמך על השרת המארח
-                docker.image('node:20-alpine').inside {
-                    dir('api') {
-                        sh 'npm install'
-                        sh 'npm test' 
-                    }
+                dir('api') {
+                    // הרצה נקייה של התקנת חבילות ובדיקות דרך ה-CLI של המערכת
+                    sh 'npm install'
+                    sh 'npm test' 
                 }
             }
         }
