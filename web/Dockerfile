@@ -3,5 +3,9 @@ WORKDIR /app
 COPY package*.json ./
 RUN npm install
 COPY . .
+ARG BUILD_NUMBER=local
+ARG COMMIT_HASH=unknown
+ENV BUILD_NUMBER=${BUILD_NUMBER}
+ENV COMMIT_HASH=${COMMIT_HASH}
 EXPOSE 8000
 CMD [ "npm", "start" ]
