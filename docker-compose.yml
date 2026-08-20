@@ -8,7 +8,6 @@ services:
       args:
         BUILD_NUMBER: "${BUILD_NUMBER:-local}"
         GIT_COMMIT_SHORT: "${GIT_COMMIT_SHORT:-unknown}"
-    # הסרנו את ה-ports החוצה מכיוון ש-Nginx מדבר איתם פנימית ברשת
     environment:
       - BUILD_NUMBER=${BUILD_NUMBER:-local}
       - GIT_COMMIT_SHORT=${GIT_COMMIT_SHORT:-unknown}
@@ -19,8 +18,7 @@ services:
     build:
       context: ./web
       dockerfile: Dockerfile
-    ports:
-      - "8000:8000"
+    # הסרנו את ה-ports החוצה כדי שגם blue וגם green יוכלו לרוץ במקביל ללא התנגשות פורטים
     environment:
       - API_URL=http://api:3000
     networks:
