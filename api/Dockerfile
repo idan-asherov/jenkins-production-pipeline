@@ -1,11 +1,17 @@
 FROM node:20-alpine
+
 WORKDIR /app
+
+ARG BUILD_NUMBER=local
+ARG GIT_COMMIT_SHORT=unknown
+
+ENV BUILD_NUMBER=${BUILD_NUMBER}
+ENV GIT_COMMIT_SHORT=${GIT_COMMIT_SHORT}
+
 COPY package*.json ./
 RUN npm install
+
 COPY . .
-ARG BUILD_NUMBER=local
-ARG COMMIT_HASH=unknown
-ENV BUILD_NUMBER=${BUILD_NUMBER}
-ENV COMMIT_HASH=${COMMIT_HASH}
+
 EXPOSE 3000
-CMD [ "npm", "start" ]
+CMD ["npm", "start"]

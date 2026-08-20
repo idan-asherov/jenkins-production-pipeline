@@ -3,10 +3,11 @@ const { randomGreets } = require("./greets");
 const app = express();
 
 app.get("/health", (req, res) => {
-  res.json({ 
+  res.json({
     status: "ok",
     build: process.env.BUILD_NUMBER || "local",
-    commit: process.env.COMMIT_HASH || "unknown"
+    commit:
+      process.env.COMMIT_HASH || process.env.GIT_COMMIT_SHORT || "unknown",
   });
 });
 

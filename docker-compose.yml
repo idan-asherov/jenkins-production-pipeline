@@ -1,28 +1,32 @@
+version: '3.8'
+
 services:
   api:
     build:
       context: ./api
+      dockerfile: Dockerfile
       args:
-        - BUILD_NUMBER=${BUILD_NUMBER:-local}
-        - COMMIT_HASH=${GIT_COMMIT_SHORT:-unknown}
+        BUILD_NUMBER: "${BUILD_NUMBER:-local}"
+        GIT_COMMIT_SHORT: "${GIT_COMMIT_SHORT:-unknown}"
+    ports:
+      - "3000:3000"
+    environment:
+      - BUILD_NUMBER=${BUILD_NUMBER:-local}
+      - GIT_COMMIT_SHORT=${GIT_COMMIT_SHORT:-unknown}
     networks:
       - bg-network
-    restart: unless-stopped
 
   web:
     build:
       context: ./web
-      args:
-        - BUILD_NUMBER=${BUILD_NUMBER:-local}
-        - COMMIT_HASH=${GIT_COMMIT_SHORT:-unknown}
+      dockerfile: Dockerfile
+    ports:
+      - "8000:8000"
     environment:
-      - API_HOST=${COMPOSE_PROJECT_NAME}-api-1
+      - API_URL=http://api:3000
     networks:
       - bg-network
-    depends_on:
-      - api
-    restart: unless-stopped
 
 networks:
   bg-network:
-    external: true
+    driver: bridge
