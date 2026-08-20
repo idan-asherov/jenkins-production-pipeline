@@ -28,9 +28,10 @@ docker-compose up -d
 echo "Waiting for $NEW to spin up (10 seconds)..."
 sleep 10
 
-# Ensure Nginx router container is running
+# Ensure Nginx router container is running safely
 if ! docker ps -q -f name=nginx-router | grep -q .; then
     echo "Starting initial Nginx router..."
+    touch nginx.conf
     cat << 'CONF' > nginx.conf
 events {}
 http {
