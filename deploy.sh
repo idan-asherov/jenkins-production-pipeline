@@ -28,15 +28,11 @@ docker-compose up -d
 echo "Waiting for $NEW to spin up (10 seconds)..."
 sleep 10
 
-# Ensure Nginx router container is running safely
+# Ensure Nginx router container is running safely WITHOUT volume mount issues
 if ! docker ps -q -f name=nginx-router | grep -q .; then
     echo "Starting initial nginx-router..."
     docker rm -f nginx-router 2>/dev/null || true
 
-    # מחיקה מוחלטת של כל מה שנקרא nginx.conf (בין אם קובץ או תיקייה שדוקר יצר)
-    rm -rf nginx.conf
-
-    # יצירת קובץ טקסט חדש לחלוטין מאפס
     cat << 'CONF' > nginx.conf
 events {}
 http {
@@ -46,8 +42,12 @@ http {
     }
 }
 CONF
-
-    docker run -d --name nginx-router -p 8000:80 --network bg-network -v "$(pwd)/nginx.conf:/etc/nginx/nginx.conf" nginx:alpine
+    # הרצת הקונטיינר ללא מיפוי Volume בעייתי! 
+    docker run -d --name nginx-router -p 8000:80 --network bg-network nginx:alpine
+    
+    # העתקת הקובץ ישירות פנימה לתוך הקונטיינר החי
+    docker cp nginx.conf nginx-router:/etc/nginx/nginx.conf
+    docker exec nginx-router nginx -s reload
 fi
 
 # Run Health Check against the newly spun up API container
