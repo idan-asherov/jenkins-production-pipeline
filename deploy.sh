@@ -42,8 +42,8 @@ http {
     }
 }
 CONF
-    # הרצת הקונטיינר ללא מיפוי Volume בעייתי! 
-    docker run -d --name nginx-router -p 8000:80 --network bg-network nginx:alpine
+    # הנה השינוי שלך: הרצת הנתב על פורט 8001 הפנוי והנקי!
+    docker run -d --name nginx-router -p 8001:80 --network bg-network nginx:alpine
     
     # העתקת הקובץ ישירות פנימה לתוך הקונטיינר החי
     docker cp nginx.conf nginx-router:/etc/nginx/nginx.conf
