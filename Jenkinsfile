@@ -1,12 +1,8 @@
 pipeline {
     agent any
     
-    environment {
-        GIT_COMMIT_SHORT = sh(script: 'git rev-parse --short HEAD', returnStdout: true).trim()
-    }
-    
     stages {
-        stage('Checkout') {
+        stage('Checkout SCM') {
             steps {
                 checkout scm
             }
@@ -15,26 +11,41 @@ pipeline {
         stage('Test & Coverage Gate') {
             steps {
                 dir('api') {
-                    sh 'npm install'
-                    sh 'npm test' 
+                    sh "npm install"
+                    sh "npm test"
                 }
             }
         }
         
         stage('Build Images') {
             steps {
-                sh """
-                    export BUILD_NUMBER=${env.BUILD_NUMBER}
-                    export GIT_COMMIT_SHORT=${GIT_COMMIT_SHORT}
-                    docker-compose build
-                """
+                sh '''
+                export BUILD_NUMBER=${BUILD_NUMBER}
+                export GIT_COMMIT_SHORT=$(git rev-parse --short HEAD)
+                docker-compose build
+                '''
             }
         }
         
         stage('Deploy (Blue-Green)') {
-            steps {
-                sh 'bash deploy.sh'
+            when {
+                anyOf {
+                    branch 'main'
+                    expression { env.GIT_BRANCH == 'origin/main' || env.GIT_BRANCH == 'main' }
+                }
             }
+            steps {
+                sh "bash deploy.sh"
+            }
+        }
+    }
+    
+    post {
+        success {
+            echo "✅ Pipeline finished successfully!"
+        }
+        failure {
+            echo "❌ Pipeline failed! Check logs."
         }
     }
 }
