@@ -3,6 +3,14 @@ set -e
 
 echo "=== Starting Blue-Green Deployment ==="
 
+# התיקון: חילוץ חותמת הקומיט ישירות מג'נקינס
+export BUILD_NUMBER=${BUILD_NUMBER:-local}
+if [ -n "$GIT_COMMIT" ]; then
+    export GIT_COMMIT_SHORT=${GIT_COMMIT:0:7}
+else
+    export GIT_COMMIT_SHORT=$(git rev-parse --short HEAD 2>/dev/null || echo "unknown")
+fi
+
 # Create network if it doesn't exist
 docker network create bg-network 2>/dev/null || true
 
@@ -42,10 +50,7 @@ http {
     }
 }
 CONF
-    # הנה השינוי שלך: הרצת הנתב על פורט 8001 הפנוי והנקי!
     docker run -d --name nginx-router -p 8001:80 --network bg-network nginx:alpine
-    
-    # העתקת הקובץ ישירות פנימה לתוך הקונטיינר החי
     docker cp nginx.conf nginx-router:/etc/nginx/nginx.conf
     docker exec nginx-router nginx -s reload
 fi
